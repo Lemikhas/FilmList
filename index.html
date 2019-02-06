@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/5.8.2/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.5/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.5/firebase-firestore.js"></script>
+    <script>
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyBHEAYntFvoTMJfLSgnSUNBjvgHHCSmn2o",
+        authDomain: "filmlist-cea62.firebaseapp.com",
+        databaseURL: "https://filmlist-cea62.firebaseio.com",
+        projectId: "filmlist-cea62",
+        storageBucket: "filmlist-cea62.appspot.com",
+        messagingSenderId: "16394189072"
+      };
+      firebase.initializeApp(config);
+    </script>
+
+    <title>FilmList</title>
+
+</head>
+<body>
+    <div id="main">
+        <div id="form">
+            <input type="text" id="addFilmField" oninput="search()">
+            <button onclick="writeData()">Add</button>
+        </div>
+        <div>
+            <ul id="list"></ul>
+        </div>
+    </div>
+<script>
+
+    const base = firebase.firestore();
+    const addFilmField = document.getElementById("addFilmField");
+    const listbox = document.getElementById("list");
+
+    function search(){
+        let searchList = listbox.children;
+        
+        for (let i = 0; i < searchList.length; i++) {
+            if (searchList[i].innerText.includes(addFilmField.value)) {
+                searchList[i].style.display = "block";
+            }else{
+                searchList[i].style.display = "none";
+            }
+        }
+        
+    }
+
+    function loadData() {
+        listbox.innerHTML = ""
+        base.collection("moviesToWatch").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                console.log(`${doc.id} => ${doc.data().name}`);
+                listbox.innerHTML += `<li>${doc.data().name} <button onclick="deleteData('${doc.id}')">X</button></li>`;
+            });
+        });
+    }
+
+    function writeData() {
+        var name = addFilmField.value;
+        addFilmField.value = "";
+
+        base.collection("moviesToWatch").add({
+        name: name
+        })
+        .then(function(docRef) {
+            console.log("Document written with ID: ", docRef.id);
+        })
+        .catch(function(error) {
+            console.error("Error adding document: ", error);
+        });
+        loadData();
+    }
+    function deleteData(id) {
+        base.collection("moviesToWatch").doc("/"+id).delete();
+        loadData();
+    }
+    loadData();
+</script>
+
+</body>
+</html>

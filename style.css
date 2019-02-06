@@ -1,0 +1,26 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background: #dddfd4;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#main{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    margin: auto;
+    width: 50vw;
+    height: 100vw;
+    background: #3fb0ac;
+    padding: 3rem;
+}
+
+#addFilmField{
+    
+}
