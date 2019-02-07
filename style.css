@@ -202,10 +202,13 @@ body{
     justify-content: flex-start;
     align-content: space-between;
 }
+
 .resultContainer>div{
     width: 100%;
 }
-
+#TMDb-search:first-child {
+    margin-top: 4rem;
+}
 #TMDb-search h1{
     margin-left: 2rem;
     color: #fff;
@@ -214,6 +217,7 @@ body{
 #TMDb-search h5{
     margin-left: 3rem;
     color: #aaa;
+    display: inline;
 }
 #TMDb-search p{
     margin: 1rem 0.4rem; 
@@ -237,13 +241,17 @@ body{
     cursor: pointer;
 }
 .close{
+    position: fixed;
+    top: 0;
+    width: 100%;
     background: rgba(80, 80, 80, 0.9);
-    position: sticky;
-    top: 0px;
     color: #eee;
     font-size: 2.5rem;
-    text-align: right;
-    padding: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+.close>span{
+    margin: 0.5rem 1rem;
 }
 @media(max-width:500px){
     #main{
