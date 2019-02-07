@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="robots" content="none" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/5.8.2/firebase.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.5.5/firebase-app.js"></script>
@@ -26,27 +28,143 @@
 
 </head>
 <body>
+    <div id="TMDb-search">
+        <div class="close"><i class="far fa-times-circle" onclick="closeSearch()"></i></div>
+        <div id="searchResults"></div>
+    </div>
+    <div id="delete-popup">
+    </div>
     <div id="main">
         <div id="form">
             <input type="text" id="addFilmField" oninput="search()">
-            <button onclick="writeData()">Add</button>
+            <span onclick="searchTMDb()"><i class="fas fa-search"></i></span>
         </div>
-        <div>
-            <ul id="list"></ul>
-        </div>
+        <ul id="list">
+
+        </ul>
     </div>
 <script>
 
     const base = firebase.firestore();
     const addFilmField = document.getElementById("addFilmField");
     const listbox = document.getElementById("list");
+    const TMDbSearch = document.getElementById("TMDb-search");
+
+    function whatGenre(id) {
+        switch (id) {
+            case 28:
+                return "Action"
+                break;
+            case 12:
+                return "Adventure"
+                break;
+            case 16:
+                return "Animation"
+                break;
+            case 35:
+                return "Comedy"
+                break;
+            case 80:
+                return "Crime"
+                break;
+            case 99:
+                return "Documentary"
+                break;
+            case 18:
+                return "Drama"
+                break;
+            case 10751:
+                return "Family"
+                break;
+            case 14:
+                return "Fantasy"
+                break;
+            case 36:
+                return "History"
+                break;
+            case 27:
+                return "Horror"
+                break;
+            case 10402:
+                return "Music"
+                break;
+            case 9648:
+                return "Mystery"
+                break;
+            case 10749:
+                return "Romance"
+                break;
+            case 878:
+                return "Science Fiction"
+                break;
+            case 10770:
+                return "TV Movie"
+                break;
+            case 53:
+                return "Thriller"
+                break;
+            case 10752:
+                return "War"
+                break;
+            case 37:
+                return "Western"
+                break;    
+            default:
+                break;
+        }
+    }
+    
+
+    function closeSearch() {
+        document.getElementById("TMDb-search").style.display = "none";
+    }
+
+    function searchTMDb(){
+        var xmlhttp = new XMLHttpRequest();
+        var url = "https://api.themoviedb.org/3/search/movie?api_key=5f01828255315f197f02241442c3260e&query=" + addFilmField.value +"&language=pl";
+
+        addFilmField.value = "";
+        xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var myArr = JSON.parse(this.responseText);
+            viewResults(myArr.results);   
+        }
+        };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+
+    }
+
+    function viewResults(results) {
+        console.log(results);
+        search();
+        TMDbSearch.style.display = "block";
+        document.getElementById("searchResults").innerHTML = "";
+        results.forEach(result => {
+            var genre = [];
+            for (let i = 0; i < result.genre_ids.length; i++) {
+                genre[i] = whatGenre(result.genre_ids[i]);
+            }
+
+            document.getElementById("searchResults").innerHTML += `
+            <div class="resultContainer">
+                <img src="https://image.tmdb.org/t/p/w200${result.poster_path}">
+                <div>
+                    <h1>${result.original_title}</h1>
+                    <span onclick="writeData('${result.id}', '${result.title}')" class="add-btn"><i class="fas fa-plus"></i> Add to List</span>
+                    <h5>(${result.title}) ${genre.join(", ")}</h5>
+                    <p>${result.overview}</p>
+                </div>
+            </div>`
+        });
+    }
 
     function search(){
         let searchList = listbox.children;
         
         for (let i = 0; i < searchList.length; i++) {
-            if (searchList[i].innerText.includes(addFilmField.value)) {
-                searchList[i].style.display = "block";
+            if (searchList[i].innerText.toLowerCase().includes(addFilmField.value.toLowerCase())) {
+                searchList[i].style.display = "flex";
             }else{
                 searchList[i].style.display = "none";
             }
@@ -58,18 +176,73 @@
         listbox.innerHTML = ""
         base.collection("moviesToWatch").get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
-                console.log(`${doc.id} => ${doc.data().name}`);
-                listbox.innerHTML += `<li>${doc.data().name} <button onclick="deleteData('${doc.id}')">X</button></li>`;
+                console.log(`${doc.id} => ${doc.data().id}`);
+                listbox.innerHTML += `
+                <li>
+                    <div class="title-wrap">
+                        <h1><i class="fas fa-film"></i>${doc.data().original_title}</h1>
+                    </div>
+                    <span class="delete-btn" onclick="deleteData('${doc.id}', '${doc.data().original_title}')"><i class="far fa-trash-alt"></i></span>
+                    <div id="Info-box-${doc.data().id}" class="Info-box"></div>
+                    <span class="info" id="Info-btn-${doc.data().id}" onclick="toggleInfo('${doc.data().id}')"><i class="fas fa-chevron-down"></i> More Info</span>
+                </li>`;
             });
         });
     }
 
-    function writeData() {
+    function toggleInfo(id) {
+        var info = document.getElementById(`Info-box-${id}`);
+        if (info.style.display.includes("none")) {
+            info.style.display = "block";
+            showInfoRequest(id);
+            document.getElementById(`Info-btn-${id}`).innerHTML = `<i class="fas fa-chevron-up"></i> Less Info`;
+        }else{
+            info.style.display = "none";
+            info.innerHTML = "";
+            document.getElementById(`Info-btn-${id}`).innerHTML = `<i class="fas fa-chevron-down"></i> More Info`;
+        }
+    }
+
+    function showInfoRequest(id) {
+        var xmlhttp = new XMLHttpRequest();
+        var url = `https://api.themoviedb.org/3/movie/${id}?api_key=5f01828255315f197f02241442c3260e&language=pl`;
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                    var myArr = JSON.parse(this.responseText);
+                    console.log(myArr);
+                    
+                    showInfo(myArr);   
+                }
+            };
+        xmlhttp.open("GET", url, true);
+        xmlhttp.send();
+    }
+
+    function showInfo(result) {
+        document.getElementById(`Info-box-${result.id}`).style.display = "block";
+        var genres = [];
+        result.genres.forEach((genre, index) => {
+                genres[index] = genre.name;
+            });
+            document.getElementById(`Info-box-${result.id}`).innerHTML += `
+            <div>
+                <img src="https://image.tmdb.org/t/p/w200${result.poster_path}">
+                <div>
+                    <h1>${result.original_title}</h1>
+                    <h5>${genres.join(", ")}</h5>
+                </div>
+            </div>
+            <p>${result.overview}</p>`
+        document.getElementById(`Info-box-${result.id}`).style.display = "block";
+    }
+
+    function writeData(id, original_title) {
         var name = addFilmField.value;
         addFilmField.value = "";
-
+        
         base.collection("moviesToWatch").add({
-        name: name
+            id:id,
+            original_title:original_title    
         })
         .then(function(docRef) {
             console.log("Document written with ID: ", docRef.id);
@@ -79,9 +252,24 @@
         });
         loadData();
     }
-    function deleteData(id) {
+    function deleteData(id, title) {
+        document.getElementById('delete-popup').style.display = "flex";
+        document.getElementById('delete-popup').innerHTML =`
+        <div>
+            <h1>Confirm delete: ${title}</h1>
+            <span class="btn-del-confirm" onclick="deleteConfirm('${id}')"><i class="far fa-trash-alt"></i> Delete</span>
+            <span class="btn-abort"onclick="abort()"><i class="fas fa-undo-alt"></i> No, Go back</span>
+        </div>`;
+    }
+    function deleteConfirm(id) {
         base.collection("moviesToWatch").doc("/"+id).delete();
         loadData();
+        document.getElementById('delete-popup').innerHTML ="";
+        document.getElementById('delete-popup').style.display = "none";
+    }
+    function abort() {
+        document.getElementById('delete-popup').innerHTML ="";
+        document.getElementById('delete-popup').style.display = "none";
     }
     loadData();
 </script>
