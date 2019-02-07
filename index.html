@@ -39,8 +39,11 @@
     <div id="delete-popup">
     </div>
     <div id="main">
+        <header>
+            MyMovieList
+        </header>
         <div id="form">
-            <input type="text" id="addFilmField" oninput="search()">
+            <input type="text" id="addFilmField" oninput="search()" placeholder="Search for movies...">
             <span onclick="searchTMDb()"><i class="fas fa-search"></i></span>
         </div>
         <ul id="list">
@@ -169,7 +172,7 @@
     function getIds(id) {
         base.collection("moviesToWatch").get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
-                console.log(`${doc.id} => ${doc.data().id}`);
+                //console.log(`${doc.id} => ${doc.data().id}`);
                 if (id == doc.data().id) {
                     document.getElementById(`add-btn-${id}`).innerHTML = `
                     <span class="add-btn added">
@@ -198,7 +201,7 @@
         listbox.innerHTML = ""
         base.collection("moviesToWatch").get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
-                console.log(`${doc.id} => ${doc.data().id}`);
+                //console.log(`${doc.id} => ${doc.data().id}`);
                 listbox.innerHTML += `
                 <li>
                     <div class="title-wrap">
