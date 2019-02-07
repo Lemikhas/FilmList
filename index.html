@@ -183,7 +183,7 @@
                         <h1><i class="fas fa-film"></i>${doc.data().original_title}</h1>
                     </div>
                     <span class="delete-btn" onclick="deleteData('${doc.id}', '${doc.data().original_title}')"><i class="far fa-trash-alt"></i></span>
-                    <div id="Info-box-${doc.data().id}" class="Info-box"></div>
+                    <div id="Info-box-${doc.data().id}" class="Info-box" style="display: none;"></div>
                     <span class="info" id="Info-btn-${doc.data().id}" onclick="toggleInfo('${doc.data().id}')"><i class="fas fa-chevron-down"></i> More Info</span>
                 </li>`;
             });
