@@ -8,6 +8,7 @@
 body{
     background: #dddfd4;
     font-family: 'Roboto', sans-serif;
+    width: 100%;
 }
 #main{
     display: flex;
@@ -184,7 +185,8 @@ body{
     top: 0;
     left: 0;
     min-height: 100vh;
-    width: 100vw;
+    height: 100%;
+    width: 100%;
     background: rgba(100, 100, 100, 0.4);
     display: none;
 }
@@ -201,7 +203,7 @@ body{
     align-content: space-between;
 }
 .resultContainer>div{
-    width: 100vw;
+    width: 100%;
 }
 
 #TMDb-search h1{
