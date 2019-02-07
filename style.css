@@ -236,9 +236,11 @@ body{
     display: inline;
     float: right;
     margin-top: 1rem;
-}
-.add-btn:hover{
     cursor: pointer;
+}
+.added{
+    cursor: default;
+    background: #59c27c;
 }
 .close{
     position: fixed;

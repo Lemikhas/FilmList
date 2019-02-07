@@ -149,19 +149,37 @@
             for (let i = 0; i < result.genre_ids.length; i++) {
                 genre[i] = whatGenre(result.genre_ids[i]);
             }
-
             document.getElementById("searchResults").innerHTML += `
             <div class="resultContainer">
                 <img src="https://image.tmdb.org/t/p/w200${result.poster_path}">
                 <div>
                     <h1>${result.original_title}</h1>
-                    <span onclick="writeData('${result.id}', '${result.title}')" class="add-btn"><i class="fas fa-plus"></i> Add to List</span>
+                    <span id="add-btn-${result.id}">
+                        <span onclick="writeData('${result.id}', '${result.title}')" class="add-btn">
+                            <i class="fas fa-plus"></i> Add to List
+                        </span></span>
                     <h5>(${result.title}) ${genre.join(", ")}</h5>
                     <p>${result.overview}</p>
                 </div>
-            </div>`
+            </div>`;
+            getIds(result.id);
         });
     }
+
+    function getIds(id) {
+        base.collection("moviesToWatch").get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                console.log(`${doc.id} => ${doc.data().id}`);
+                if (id == doc.data().id) {
+                    document.getElementById(`add-btn-${id}`).innerHTML = `
+                    <span class="add-btn added">
+                        <i class="fas fa-check"></i> Added
+                    </span>`;
+                }
+            });
+        });
+    }
+
 
     function search(){
         let searchList = listbox.children;
@@ -254,6 +272,7 @@
         .catch(function(error) {
             console.error("Error adding document: ", error);
         });
+        getIds(id);
         loadData();
     }
     function deleteData(id, title) {
