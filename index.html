@@ -46,6 +46,10 @@
             <input type="text" id="addFilmField" oninput="search()" placeholder="Search for movies...">
             <span onclick="searchTMDb()"><i class="fas fa-search"></i></span>
         </div>
+        <div id="current-list-wrap">
+            <span id="current-list"></span>
+            <span id="change-list" onclick="changeCookie()"><i class="fas fa-list-ul"></i> ChangeList</span>
+        </div>
         <ul id="list">
 
         </ul>
@@ -56,6 +60,50 @@
     const addFilmField = document.getElementById("addFilmField");
     const listbox = document.getElementById("list");
     const TMDbSearch = document.getElementById("TMDb-search");
+
+
+    function setCookie(cname,cvalue) {
+        var expires = "expires=Thu, 20 Dec 2030 12:00:00 UTC;";
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(';');
+        for(var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    function changeCookie() {
+        listname = prompt("Enter List name:","");
+        if (listname != "" && listname != null) {
+        setCookie("listname", listname);
+        }
+        checkCookie()
+        loadData();
+    }
+    function checkCookie() {
+        var listname=getCookie("listname");
+        if (listname != "") {
+
+        } else {
+            listname = prompt("Enter List name:","");
+            if (listname != "" && listname != null) {
+            setCookie("listname", listname);
+            }
+            checkCookie()
+        }
+        document.getElementById("current-list").innerText = `Current MovieList: ${listname}`;
+        return listname;
+    }
 
     function whatGenre(id) {
         switch (id) {
@@ -170,7 +218,7 @@
     }
 
     function getIds(id) {
-        base.collection("moviesToWatch").get().then((querySnapshot) => {
+        base.collection(`${checkCookie()}`).get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
                 //console.log(`${doc.id} => ${doc.data().id}`);
                 if (id == doc.data().id) {
@@ -199,7 +247,7 @@
 
     function loadData() {
         listbox.innerHTML = ""
-        base.collection("moviesToWatch").get().then((querySnapshot) => {
+        base.collection(`${checkCookie()}`).get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
                 //console.log(`${doc.id} => ${doc.data().id}`);
                 listbox.innerHTML += `
@@ -265,7 +313,7 @@
         var name = addFilmField.value;
         addFilmField.value = "";
         
-        base.collection("moviesToWatch").add({
+        base.collection(`${checkCookie()}`).add({
             id:id,
             original_title:original_title    
         })
@@ -278,6 +326,7 @@
         getIds(id);
         loadData();
     }
+
     function deleteData(id, title) {
         document.getElementById('delete-popup').style.display = "flex";
         document.getElementById('delete-popup').innerHTML =`
@@ -287,12 +336,14 @@
             <span class="btn-abort"onclick="abort()"><i class="fas fa-undo-alt"></i> No, Go back</span>
         </div>`;
     }
+
     function deleteConfirm(id) {
-        base.collection("moviesToWatch").doc("/"+id).delete();
+        base.collection(`${checkCookie()}`).doc("/"+id).delete();
         loadData();
         document.getElementById('delete-popup').innerHTML ="";
         document.getElementById('delete-popup').style.display = "none";
     }
+
     function abort() {
         document.getElementById('delete-popup').innerHTML ="";
         document.getElementById('delete-popup').style.display = "none";
