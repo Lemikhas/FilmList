@@ -38,6 +38,15 @@
     </div>
     <div id="delete-popup">
     </div>
+    <div id="change-list-popup">
+        <div>
+            <input type="text" id="new-list" placeholder="Name of Your List">
+            <div>
+                <span id="btn-accept" onclick="changeCookie()"><i class="fas fa-check"></i> Ok</span>
+                <span id="btn-denay" onclick="document.getElementById('change-list-popup').style.display = 'none'"><i class="fas fa-times"></i> Cancel</span>
+            </div>
+        </div>
+    </div>
     <div id="main">
         <header>
             MyMovieList
@@ -48,8 +57,9 @@
         </div>
         <div id="current-list-wrap">
             <span id="current-list"></span>
-            <span id="change-list" onclick="changeCookie()"><i class="fas fa-list-ul"></i> ChangeList</span>
+            <span id="change-list" onclick="document.getElementById('change-list-popup').style.display = 'flex'"><i class="fas fa-list-ul"></i> ChangeList</span>
         </div>
+
         <ul id="list">
 
         </ul>
@@ -60,7 +70,7 @@
     const addFilmField = document.getElementById("addFilmField");
     const listbox = document.getElementById("list");
     const TMDbSearch = document.getElementById("TMDb-search");
-
+    const newList = document.getElementById("new-list");
 
     function setCookie(cname,cvalue) {
         var expires = "expires=Thu, 20 Dec 2030 12:00:00 UTC;";
@@ -83,7 +93,9 @@
         return "";
     }
     function changeCookie() {
-        listname = prompt("Enter List name:","");
+        listname = newList.value;
+        newList.value = "";
+        document.getElementById('change-list-popup').style.display = 'none';
         if (listname != "" && listname != null) {
         setCookie("listname", listname);
         }
@@ -95,11 +107,7 @@
         if (listname != "") {
 
         } else {
-            listname = prompt("Enter List name:","");
-            if (listname != "" && listname != null) {
-            setCookie("listname", listname);
-            }
-            checkCookie()
+            document.getElementById('change-list-popup').style.display = 'flex';
         }
         document.getElementById("current-list").innerText = `Current MovieList: ${listname}`;
         return listname;
