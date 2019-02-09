@@ -105,8 +105,9 @@
     function checkCookie() {
         var listname=getCookie("listname");
         if (listname != "") {
-
-        } else {
+            document.getElementById('btn-denay').style.display = 'inline';
+        }else{
+            document.getElementById('btn-denay').style.display = 'none';
             document.getElementById('change-list-popup').style.display = 'flex';
         }
         document.getElementById("current-list").innerText = `Current MovieList: ${listname}`;
