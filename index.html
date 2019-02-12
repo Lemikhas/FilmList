@@ -91,6 +91,7 @@
     }
 
     function changeLocalStorage() {
+        let oldList = localStorage.getItem("lastList");
         listname = newList.value;
         newList.value = "";
         document.getElementById('change-list-popup').style.display = 'none';
@@ -98,7 +99,7 @@
             localStorage.setItem("lastList", listname);
             if (localStorage.getItem("listArray") == null) {
                 localStorage.setItem("listArray", listname);
-            }else{
+            }else if (listname != oldList) {
                 localStorage.setItem("listArray", listname + ", " + localStorage.getItem("listArray"));
             }
         }
