@@ -11,6 +11,21 @@ body{
     width: 100%;
 }
 
+#pastLists{
+    margin-top: 1.5rem;
+    list-style: none;
+}
+
+#pastLists li{
+    background: #ccc;
+    width: 30%;
+    margin: 5px auto;
+    color: #333;
+    padding: 0.4rem;
+    border-radius: 50px;
+    cursor: pointer;
+}
+
 #current-list{
     width: 65%;
 }
@@ -292,6 +307,7 @@ header{
     justify-content: flex-end;
 }
 .close>span{
+    cursor: pointer;
     margin: 0.5rem 1rem;
 }
 @media(max-width:500px){

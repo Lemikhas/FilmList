@@ -31,7 +31,7 @@
     <div id="TMDb-search">
         <div class="close">
             <span>
-                <i class="far fa-times-circle" onclick="closeSearch()"></i>
+                <i class="fas fa-times" onclick="closeSearch()"></i>
             </span>
         </div> 
         <div id="searchResults"></div>
@@ -42,9 +42,12 @@
         <div>
             <input type="text" id="new-list" placeholder="Name of Your List">
             <div>
-                <span id="btn-accept" onclick="changeCookie()"><i class="fas fa-check"></i> Ok</span>
+                <span id="btn-accept" onclick="changeLocalStorage()"><i class="fas fa-check"></i> Ok</span>
                 <span id="btn-denay" onclick="document.getElementById('change-list-popup').style.display = 'none'"><i class="fas fa-times"></i> Cancel</span>
             </div>
+            <ul id="pastLists">
+
+            </ul>
         </div>
     </div>
     <div id="main">
@@ -57,7 +60,7 @@
         </div>
         <div id="current-list-wrap">
             <span id="current-list"></span>
-            <span id="change-list" onclick="document.getElementById('change-list-popup').style.display = 'flex'"><i class="fas fa-list-ul"></i> ChangeList</span>
+            <span id="change-list" onclick="openChangeListPopup()"><i class="fas fa-list-ul"></i> ChangeList</span>
         </div>
 
         <ul id="list">
@@ -72,39 +75,39 @@
     const TMDbSearch = document.getElementById("TMDb-search");
     const newList = document.getElementById("new-list");
 
-    function setCookie(cname,cvalue) {
-        var expires = "expires=Thu, 20 Dec 2030 12:00:00 UTC;";
-        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    function openChangeListPopup(){
+        document.getElementById('change-list-popup').style.display = 'flex';
+        document.getElementById('pastLists').innerHTML = "";
+        if (localStorage.getItem("listArray") != null) {
+            const listArray = localStorage.getItem("listArray").split(", ").slice(0,5);
+            listArray.forEach((list, index) => {
+                document.getElementById('pastLists').innerHTML += `
+                <li onclick="newList.value = '${list}'; changeLocalStorage()">${list}</li>`;
+                localStorage.setItem("listArray", listArray.join(", "));
+            });
+        }
+        
+
     }
 
-    function getCookie(cname) {
-        var name = cname + "=";
-        var decodedCookie = decodeURIComponent(document.cookie);
-        var ca = decodedCookie.split(';');
-        for(var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-    function changeCookie() {
+    function changeLocalStorage() {
         listname = newList.value;
         newList.value = "";
         document.getElementById('change-list-popup').style.display = 'none';
         if (listname != "" && listname != null) {
-        setCookie("listname", listname);
+            localStorage.setItem("lastList", listname);
+            if (localStorage.getItem("listArray") == null) {
+                localStorage.setItem("listArray", listname);
+            }else{
+                localStorage.setItem("listArray", listname + ", " + localStorage.getItem("listArray"));
+            }
         }
-        checkCookie()
+        checkLocalStorage()
         loadData();
     }
-    function checkCookie() {
-        var listname=getCookie("listname");
-        if (listname != "") {
+    function checkLocalStorage() {
+        let listname= localStorage.getItem("lastList");
+        if (listname != null) {
             document.getElementById('btn-denay').style.display = 'inline';
         }else{
             document.getElementById('btn-denay').style.display = 'none';
@@ -174,6 +177,7 @@
                 return "Western"
                 break;    
             default:
+                return ""
                 break;
         }
     }
@@ -184,34 +188,31 @@
     }
 
     function searchTMDb(){
-        var xmlhttp = new XMLHttpRequest();
-        var url = "https://api.themoviedb.org/3/search/movie?api_key=5f01828255315f197f02241442c3260e&query=" + addFilmField.value +"&language=pl";
-
-        addFilmField.value = "";
-        xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var myArr = JSON.parse(this.responseText);
-            viewResults(myArr.results);   
-        }
-        };
-        xmlhttp.open("GET", url, true);
-        xmlhttp.send();
-
+        sendRequest(
+            `https://api.themoviedb.org/3/search/movie?api_key=5f01828255315f197f02241442c3260e&query="${addFilmField.value}"&language=pl`,
+            viewResults
+        );
     }
 
-    function viewResults(results) {
-        console.log(results);
+    function sendRequest(url, func) {
+        fetch(url)
+        .then(res => res.json())
+        .then(data => func(data))
+    }
+
+    function viewResults(data) {
+        const results = data.results;
+        addFilmField.value = "";
         search();
         TMDbSearch.style.display = "block";
         document.getElementById("searchResults").innerHTML = "";
         results.forEach(result => {
-            var genre = [];
-            for (let i = 0; i < result.genre_ids.length; i++) {
-                genre[i] = whatGenre(result.genre_ids[i]);
-            }
+
+            let genre = result.genre_ids.map(genre_id => whatGenre(genre_id));
+
             document.getElementById("searchResults").innerHTML += `
             <div class="resultContainer">
-                <img src="https://image.tmdb.org/t/p/w200${result.poster_path}">
+                <img src="https://image.tmdb.org/t/p/w200${result.poster_path}" alt="img not found">
                 <div>
                     <h1>${result.original_title}</h1>
                     <span id="add-btn-${result.id}">
@@ -227,7 +228,7 @@
     }
 
     function getIds(id) {
-        base.collection(`${checkCookie()}`).get().then((querySnapshot) => {
+        base.collection(`${checkLocalStorage()}`).get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
                 //console.log(`${doc.id} => ${doc.data().id}`);
                 if (id == doc.data().id) {
@@ -256,7 +257,7 @@
 
     function loadData() {
         listbox.innerHTML = ""
-        base.collection(`${checkCookie()}`).get().then((querySnapshot) => {
+        base.collection(`${checkLocalStorage()}`).get().then((querySnapshot) => {
             querySnapshot.forEach((doc) => {
                 //console.log(`${doc.id} => ${doc.data().id}`);
                 listbox.innerHTML += `
@@ -286,26 +287,15 @@
     }
 
     function showInfoRequest(id) {
-        var xmlhttp = new XMLHttpRequest();
-        var url = `https://api.themoviedb.org/3/movie/${id}?api_key=5f01828255315f197f02241442c3260e&language=pl`;
-        xmlhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) {
-                    var myArr = JSON.parse(this.responseText);
-                    console.log(myArr);
-                    
-                    showInfo(myArr);   
-                }
-            };
-        xmlhttp.open("GET", url, true);
-        xmlhttp.send();
+        sendRequest(
+            `https://api.themoviedb.org/3/movie/${id}?api_key=5f01828255315f197f02241442c3260e&language=pl`,
+            showInfo
+        );
     }
 
     function showInfo(result) {
         document.getElementById(`Info-box-${result.id}`).style.display = "block";
-        var genres = [];
-        result.genres.forEach((genre, index) => {
-                genres[index] = genre.name;
-            });
+        let genres = result.genres.map(genre =>  genre.name);
             document.getElementById(`Info-box-${result.id}`).innerHTML += `
             <div>
                 <img src="https://image.tmdb.org/t/p/w200${result.poster_path}">
@@ -322,7 +312,7 @@
         var name = addFilmField.value;
         addFilmField.value = "";
         
-        base.collection(`${checkCookie()}`).add({
+        base.collection(`${checkLocalStorage()}`).add({
             id:id,
             original_title:original_title    
         })
@@ -347,7 +337,7 @@
     }
 
     function deleteConfirm(id) {
-        base.collection(`${checkCookie()}`).doc("/"+id).delete();
+        base.collection(`${checkLocalStorage()}`).doc("/"+id).delete();
         loadData();
         document.getElementById('delete-popup').innerHTML ="";
         document.getElementById('delete-popup').style.display = "none";
