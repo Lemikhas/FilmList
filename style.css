@@ -353,7 +353,7 @@ header{
         display: none;
     }
 
-    #new-list{
+    #new-list, #pastLists{
         width: 100%;
     }
 
